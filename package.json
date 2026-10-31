@@ -1,0 +1,13 @@
+{
+  "name": "absensi-pplg",
+  "version": "1.0.0",
+  "description": "Web absensi siswa bertema PPLG dengan server Node.js tanpa dependensi",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

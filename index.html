@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Absensi Siswa PPLG</title>
+  <meta name="theme-color" content="#0b1f3a">
+  <meta name="description" content="Absensi online siswa jurusan PPLG">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="loader" class="loader" role="status" aria-live="polite">
+    <div class="ld-box">
+      <div class="ld-ring"><span class="ld-logo">&lt;/&gt;</span></div>
+      <div class="ld-title">Absensi PPLG</div>
+      <div class="ld-bar"><i></i></div>
+      <div class="ld-txt" id="ldTxt">Menyiapkan absensi…</div>
+    </div>
+  </div>
+  <div class="bg" aria-hidden="true"><canvas id="fxAurora"></canvas><canvas id="fxDots"></canvas></div>
+
+  <main class="wrap">
+    <header class="top">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">&lt;/&gt;</span>
+        <div>
+          <strong>Absensi Siswa PPLG</strong>
+          <small>Pengembangan Perangkat Lunak &amp; Gim</small>
+        </div>
+      </div>
+      <a class="pill-link" href="/guru">Panel Guru</a>
+    </header>
+
+    <section class="card hero" aria-label="Waktu saat ini">
+      <div class="live"><span class="dot"></span><span>LIVE · <span id="syncText">menghubungkan…</span></span></div>
+      <div class="clock-row">
+        <div class="clock" id="jam">--:--:--</div>
+        <span class="wib">WIB</span>
+      </div>
+      <div class="tgl" id="tanggal">&nbsp;</div>
+      <div class="countdown">Tanggal berganti otomatis dalam <b id="countdown">--:--:--</b></div>
+    </section>
+
+    <div class="grid">
+      <section class="card" aria-label="Form absen">
+        <div id="areaForm">
+          <h2>Isi Absen Hari Ini</h2>
+          <p class="batas" id="batas" hidden>Absen ditutup dalam <b class="mono" id="batasSisa">--:--:--</b> (pukul <span id="batasJam"></span> WIB)</p>
+          <form id="form" novalidate autocomplete="off">
+            <label class="field">
+              <span>Nama lengkap</span>
+              <input id="nama" type="text" maxlength="60" placeholder="Ketik atau pilih namamu" autocomplete="off" list="daftarSiswa" required>
+              <datalist id="daftarSiswa"></datalist>
+            </label>
+
+            <label class="field">
+              <span>Kelas <em>(opsional)</em></span>
+              <input id="kelas" type="text" maxlength="20" placeholder="Contoh: XI PPLG 1" autocomplete="off">
+            </label>
+
+            <fieldset>
+              <legend>Ceklis kehadiranmu</legend>
+              <div class="opts">
+                <label class="opt hadir">
+                  <input type="radio" name="status" value="Hadir">
+                  <span class="box"><i class="chk">✓</i><b>Hadir</b><small>Aku masuk hari ini</small></span>
+                </label>
+                <label class="opt izin">
+                  <input type="radio" name="status" value="Izin">
+                  <span class="box"><i class="chk">✓</i><b>Izin</b><small>Ada keperluan</small></span>
+                </label>
+                <label class="opt sakit">
+                  <input type="radio" name="status" value="Sakit">
+                  <span class="box"><i class="chk">✓</i><b>Sakit</b><small>Kurang sehat</small></span>
+                </label>
+              </div>
+            </fieldset>
+
+            <label class="field">
+              <span>Tempat absen</span>
+              <select id="tempat">
+                <option value="" disabled selected>Pilih tempat…</option>
+                <option>Di sekolah (ruang kelas)</option>
+                <option>Lab PPLG</option>
+                <option>Lab / bengkel lain</option>
+                <option>Di rumah</option>
+                <option>PKL / Prakerin</option>
+                <option>Lainnya</option>
+              </select>
+            </label>
+
+            <label class="field" id="tempatLainBox" hidden>
+              <span>Tulis tempatmu</span>
+              <input id="tempatLain" type="text" maxlength="40" placeholder="Contoh: Perpustakaan" autocomplete="off">
+            </label>
+
+            <p class="msg" id="pesan" role="status" aria-live="polite"></p>
+            <button class="btn" id="kirim" type="submit">Kirim Absen</button>
+          </form>
+        </div>
+
+        <div id="areaTutup" class="sukses" hidden>
+          <div class="tick gembok" aria-hidden="true"><svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+          <h2 id="tutupJudul">Absen terkunci</h2>
+          <p class="muted" id="tutupPesan"></p>
+          <div class="ago" id="tutupHitung" hidden><span class="muted">Dibuka dalam</span><big class="js-lalu" id="tutupSisa">--:--:--</big></div>
+        </div>
+
+        <div id="areaSukses" class="sukses" hidden>
+          <div class="tick" aria-hidden="true">✓</div>
+          <h2 id="sNama">Absen tercatat!</h2>
+          <p class="muted" id="sJudul">Absenmu sudah tercatat. Terima kasih!</p>
+          <div class="kv">
+            <div><span>Status</span><b id="sStatus"></b></div>
+            <div><span>Tempat</span><b id="sTempat"></b></div>
+            <div><span>Waktu kirim</span><b id="sWaktu"></b></div>
+            <div><span>Tanggal</span><b id="sTanggal"></b></div>
+          </div>
+          <div class="ago">
+            <span class="muted">Kamu absen</span>
+            <big class="js-lalu" id="sLalu">…</big>
+            <span class="fresh js-fresh" id="sFresh"></span>
+          </div>
+          <button class="btn ghost" id="btnLain" type="button">Absen siswa lain</button>
+        </div>
+      </section>
+
+      <section class="card" aria-label="Rekap hari ini">
+        <div class="stats">
+          <div class="stat total"><b id="nTotal">0</b><span>Total</span></div>
+          <div class="stat hadir"><b id="nHadir">0</b><span>Hadir</span></div>
+          <div class="stat izin"><b id="nIzin">0</b><span>Izin</span></div>
+          <div class="stat sakit"><b id="nSakit">0</b><span>Sakit</span></div>
+        </div>
+        <div id="kartuFeed">
+          <h2>Absen Terbaru</h2>
+          <ul class="feed" id="feed"></ul>
+          <div class="empty" id="feedKosong" hidden>Belum ada yang absen hari ini.<br>Jadilah yang pertama!</div>
+        </div>
+      </section>
+    </div>
+
+    <p class="foot">Semua waktu memakai jam server (WIB) · Dibuat untuk anak PPLG</p>
+  </main>
+
+  <script src="/fx.js"></script>
+  <script src="/common.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

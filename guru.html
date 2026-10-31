@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel Guru · Absensi PPLG</title>
+  <meta name="theme-color" content="#0b1f3a">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="loader" class="loader" role="status" aria-live="polite">
+    <div class="ld-box">
+      <div class="ld-ring"><span class="ld-logo">&lt;/&gt;</span></div>
+      <div class="ld-title">Absensi PPLG</div>
+      <div class="ld-bar"><i></i></div>
+      <div class="ld-txt" id="ldTxt">Menyiapkan absensi…</div>
+    </div>
+  </div>
+  <div class="bg" aria-hidden="true"><canvas id="fxAurora"></canvas><canvas id="fxDots"></canvas></div>
+
+  <main class="wrap">
+    <header class="top">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">&lt;/&gt;</span>
+        <div>
+          <strong>Panel Guru</strong>
+          <small>Absensi Siswa PPLG</small>
+        </div>
+      </div>
+      <a class="pill-link" href="/">← Halaman Siswa</a>
+    </header>
+
+    <section class="card hero compact" aria-label="Waktu saat ini">
+      <div class="live"><span class="dot"></span><span>LIVE · <span id="syncText">menghubungkan…</span></span></div>
+      <div class="clock-row">
+        <div class="clock" id="jam">--:--:--</div>
+        <span class="wib">WIB</span>
+      </div>
+      <div class="tgl" id="tanggal">&nbsp;</div>
+      <div class="countdown">Ganti hari otomatis dalam <b id="countdown">--:--:--</b></div>
+    </section>
+
+    <!-- Login -->
+    <section class="card login" id="login">
+      <h2>Masuk Guru</h2>
+      <p class="muted">Masukkan password guru untuk melihat daftar kehadiran.</p>
+      <form id="formLogin">
+        <label class="field">
+          <span>Password</span>
+          <input id="password" type="password" autocomplete="current-password" placeholder="Password guru" required>
+        </label>
+        <p class="msg" id="pesanLogin" role="status" aria-live="polite"></p>
+        <button class="btn" id="btnMasuk" type="submit">Masuk</button>
+      </form>
+    </section>
+
+    <!-- Dashboard -->
+    <section id="dash" hidden>
+      <div class="card toolbar">
+        <div>
+          <p class="judul-tgl" id="judulTanggal">…</p>
+          <span class="sub" id="diperbarui">Memuat…</span>
+        </div>
+        <div class="grp">
+          <button class="btn ghost small" id="btnKemarin" type="button" title="Hari sebelumnya">‹</button>
+          <input id="tgl" type="date" aria-label="Pilih tanggal">
+          <button class="btn ghost small" id="btnBesok" type="button" title="Hari berikutnya">›</button>
+          <button class="btn ghost small" id="btnHariIni" type="button">Hari ini</button>
+          <button class="btn ghost small" id="btnRefresh" type="button">Muat ulang</button>
+          <button class="btn small" id="btnExport" type="button">Unduh CSV</button>
+          <button class="btn danger small" id="btnKeluar" type="button">Keluar</button>
+        </div>
+      </div>
+
+      <div class="stats five">
+        <div class="stat total"><b id="nTotal">0</b><span>Total</span></div>
+        <div class="stat hadir"><b id="nHadir">0</b><span>Hadir</span></div>
+        <div class="stat izin"><b id="nIzin">0</b><span>Izin</span></div>
+        <div class="stat sakit"><b id="nSakit">0</b><span>Sakit</span></div>
+        <div class="stat belum"><b id="nBelum">–</b><span>Belum</span></div>
+      </div>
+
+      <div class="card">
+        <h2>Daftar Kehadiran</h2>
+        <div class="rekap" id="rekap"></div>
+
+        <div class="controls">
+          <div class="tabs" role="group" aria-label="Filter status">
+            <button class="tab" type="button" data-f="Semua" aria-pressed="true">Semua</button>
+            <button class="tab" type="button" data-f="Hadir" aria-pressed="false">Hadir</button>
+            <button class="tab" type="button" data-f="Izin" aria-pressed="false">Izin</button>
+            <button class="tab" type="button" data-f="Sakit" aria-pressed="false">Sakit</button>
+          </div>
+          <input id="cari" type="text" placeholder="Cari nama / kelas / tempat…" aria-label="Cari">
+          <select id="urut" aria-label="Urutkan">
+            <option value="terbaru">Terbaru dulu</option>
+            <option value="terlama">Terlama dulu</option>
+            <option value="nama">Nama A–Z</option>
+          </select>
+        </div>
+
+        <table class="tbl" id="tabel">
+          <thead>
+            <tr><th>No</th><th>Nama</th><th>Kelas</th><th>Status</th><th>Tempat</th><th>Jam absen</th><th>Sudah berapa lama</th><th></th></tr>
+          </thead>
+          <tbody id="isi"></tbody>
+        </table>
+        <div class="empty" id="kosong" hidden><span id="kosongTeks">Belum ada siswa yang absen.</span></div>
+      </div>
+
+      <div class="card" id="kartuBelum" style="margin-top:16px">
+        <h2>Belum Absen <span class="chip plain" id="nBelumChip">0</span></h2>
+        <p class="sub" id="belumKet"></p>
+        <div class="names" id="daftarBelum"></div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h2>Batas Waktu Absen</h2>
+        <p class="sub" id="statusJadwal">Memuat…</p>
+        <div class="row2" style="margin-top:12px">
+          <label class="field">
+            <span>Mode</span>
+            <select id="pMode">
+              <option value="buka">Buka terus (tanpa batas waktu)</option>
+              <option value="jadwal">Ikuti jam buka dan tutup</option>
+              <option value="tutup">Tutup sekarang (terkunci)</option>
+            </select>
+          </label>
+          <label class="field"><span>Jam buka (WIB)</span><input id="pBuka" type="time" value="06:00"></label>
+          <label class="field"><span>Jam tutup (WIB)</span><input id="pTutup" type="time" value="08:00"></label>
+        </div>
+        <p class="msg" id="pesanJadwal" role="status" aria-live="polite"></p>
+        <button class="btn small" id="btnSimpanJadwal" type="button">Simpan pengaturan</button>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h2>Daftar Siswa Kelas</h2>
+        <p class="sub">Satu siswa per baris, boleh pakai format <b>Nama, Kelas</b>. Dipakai untuk menampilkan siapa yang belum absen dan sebagai pilihan nama di halaman siswa.</p>
+        <label class="field" style="margin-top:12px">
+          <span>Daftar siswa</span>
+          <textarea id="teksSiswa" rows="8" placeholder="Budi Santoso, XI PPLG 1&#10;Siti Aisyah, XI PPLG 1"></textarea>
+        </label>
+        <p class="msg" id="pesanSiswa" role="status" aria-live="polite"></p>
+        <button class="btn small" id="btnSimpanSiswa" type="button">Simpan daftar siswa</button>
+      </div>
+    </section>
+
+    <p class="foot">Semua waktu memakai jam server (WIB)</p>
+  </main>
+
+  <script src="/fx.js"></script>
+  <script src="/common.js"></script>
+  <script src="/guru.js"></script>
+</body>
+</html>
